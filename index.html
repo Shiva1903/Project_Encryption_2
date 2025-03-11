@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Encryption App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    input[type="file"] {
+      display: block;
+      margin: 10px auto;
+    }
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #displayArea {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #displayArea img {
+      max-width: 100%;
+      height: auto;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Image Encryption Application</h1>
+    
+    <div class="section">
+      <h2>Encrypt Image</h2>
+      <input type="file" id="imageInput" accept="image/*">
+      <button id="encryptBtn">Encrypt &amp; Download</button>
+    </div>
+    
+    <div class="section">
+      <h2>Decrypt Encrypted Text File</h2>
+      <input type="file" id="encryptedFileInput" accept=".txt">
+      <button id="decryptBtn">Decrypt &amp; Display</button>
+      <div id="displayArea"></div>
+    </div>
+  </div>
+
+  <script>
+    // Simple encryption/decryption function: reverse the string.
+    function encrypt(text) {
+      return text.split('').reverse().join('');
+    }
+    
+    function decrypt(text) {
+      return text.split('').reverse().join('');
+    }
+    
+    // Encrypt image file and download encrypted text file.
+    document.getElementById('encryptBtn').addEventListener('click', function() {
+      const fileInput = document.getElementById('imageInput');
+      if (fileInput.files.length === 0) {
+        alert("Please select an image file to encrypt.");
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const dataURL = e.target.result;
+        // Encrypt the Data URL (this is just a demo "encryption")
+        const encryptedData = encrypt(dataURL);
+        // Create a blob from the encrypted text and download it as a text file.
+        const blob = new Blob([encryptedData], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'encrypted.txt';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+      
+      reader.readAsDataURL(file);
+    });
+    
+    // Decrypt uploaded text file and display the image.
+    document.getElementById('decryptBtn').addEventListener('click', function() {
+      const fileInput = document.getElementById('encryptedFileInput');
+      if (fileInput.files.length === 0) {
+        alert("Please select an encrypted text file.");
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const encryptedText = e.target.result;
+        // Decrypt by reversing the string back
+        const decryptedDataURL = decrypt(encryptedText);
+        // Create an image element and set its source to the decrypted Data URL.
+        const img = document.createElement('img');
+        img.src = decryptedDataURL;
+        img.alt = "Decrypted Image";
+        const displayArea = document.getElementById('displayArea');
+        displayArea.innerHTML = ''; // Clear any previous image
+        displayArea.appendChild(img);
+      };
+      
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
