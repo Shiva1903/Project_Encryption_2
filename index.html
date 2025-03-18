@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Image Encryption App</title>
+  <!-- Meta tags to discourage caching (note: these do not affect browser history) -->
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -51,21 +55,28 @@
   <div class="container">
     <h1>Image Encryption Application</h1>
     
+    <!-- Encrypt Section -->
     <div class="section">
       <h2>Encrypt Image</h2>
       <input type="file" id="imageInput" accept="image/*">
       <button id="encryptBtn">Encrypt &amp; Download</button>
     </div>
     
+    <!-- Decrypt Section -->
     <div class="section">
       <h2>Decrypt Encrypted Text File</h2>
       <input type="file" id="encryptedFileInput" accept=".txt">
       <button id="decryptBtn">Decrypt &amp; Display</button>
+      <!-- New button for downloading the decrypted image -->
+      <button id="downloadBtn" style="display: none;">Download Decrypted Image</button>
       <div id="displayArea"></div>
     </div>
   </div>
 
   <script>
+    // On load, replace the current history state to reduce extra entries.
+    window.history.replaceState(null, null, window.location.href);
+
     // Simple encryption/decryption function: reverse the string.
     function encrypt(text) {
       return text.split('').reverse().join('');
@@ -101,7 +112,9 @@
       
       reader.readAsDataURL(file);
     });
-    
+
+    let decryptedDataURL = ""; // Store the decrypted image data here
+
     // Decrypt uploaded text file and display the image.
     document.getElementById('decryptBtn').addEventListener('click', function() {
       const fileInput = document.getElementById('encryptedFileInput');
@@ -115,7 +128,7 @@
       reader.onload = function(e) {
         const encryptedText = e.target.result;
         // Decrypt by reversing the string back
-        const decryptedDataURL = decrypt(encryptedText);
+        decryptedDataURL = decrypt(encryptedText);
         // Create an image element and set its source to the decrypted Data URL.
         const img = document.createElement('img');
         img.src = decryptedDataURL;
@@ -123,9 +136,33 @@
         const displayArea = document.getElementById('displayArea');
         displayArea.innerHTML = ''; // Clear any previous image
         displayArea.appendChild(img);
+
+        // Show the "Download Decrypted Image" button
+        document.getElementById('downloadBtn').style.display = "inline-block";
       };
       
       reader.readAsText(file);
+    });
+
+    // Download the decrypted image
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      if (!decryptedDataURL) {
+        alert("No decrypted image to download. Please decrypt first.");
+        return;
+      }
+      
+      // Optionally parse the Data URL to determine the correct extension
+      const match = decryptedDataURL.match(/^data:(image\/[a-zA-Z]+);base64,/);
+      let extension = 'png'; // Default
+      if (match && match[1]) {
+        extension = match[1].split('/')[1]; // e.g., 'png', 'jpeg', etc.
+      }
+
+      // Create a link to download the image
+      const link = document.createElement('a');
+      link.href = decryptedDataURL;
+      link.download = `decryptedImage.${extension}`;
+      link.click();
     });
   </script>
 </body>
